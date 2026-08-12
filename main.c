@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+// #include <time.h>
 #include <string.h>
 #include <ctype.h>
 #include "funcs.h"
@@ -38,7 +38,7 @@ int vectors[16][2] = {
 
 int main()
 {
-  srand(time(NULL));
+  pcg_srand();
 
   if (general_input() == -1)
     return -1;

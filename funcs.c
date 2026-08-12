@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
+#include <time.h>
 #include <ctype.h>
 #include "funcs.h"
 #include "consts.h"
@@ -19,14 +21,14 @@ char* fgets_mf(char* buffer, int n, FILE* fp)
 
   int newline_ind = strcspn(buffer, "\r\n");
   int diff = strlen(buffer) - newline_ind;
-  if (diff == 0 || diff == 1 && buffer[newline_ind] == '\r')
+  if (diff == 0 || (diff == 1 && buffer[newline_ind] == '\r'))
     clear_fp(fp);
   buffer[newline_ind] = 0;
 
   return buffer;
 }
 
-int general_input()
+int general_input(void)
 {
   char filename[256];
   if (get_filename(filename, sizeof(filename)) != -1)
@@ -107,7 +109,7 @@ int input_set_number(FILE* fp, char* buffer, int lines_num)
   return 0;
 }
 
-int parse_set(char* buffer)
+void parse_set(char* buffer)
 {
   char* space_ptr = strchr(buffer, ' ');
   int pieces_len = strcspn(buffer, " ");
@@ -115,8 +117,6 @@ int parse_set(char* buffer)
   pieces[pieces_len] = 0;
 
   color = *(space_ptr + 1);
-
-  return 0;
 }
 
 void clear_fp(FILE* fp)
@@ -185,24 +185,24 @@ int validate_set(char* set)
   return 0;
 }
 
-int validate_pieces()
+int validate_pieces(void)
 {
   for (int i = 0; i < strlen(pieces); i++)
   {
     char _piece = tolower(pieces[i]);
-    if (_piece == 'k' ||
+    if (_piece == 'k' || (
         _piece != 'p' &&
         _piece != 'r' &&
         _piece != 'n' &&
         _piece != 'b' &&
-        _piece != 'q')
+        _piece != 'q'))
       return -1;
   }
 
   return 0;
 }
 
-void show_map()
+void show_map(void)
 {
   printf(ANSI_COLOR_BOLD_WHITE);
   for (int i = 0; i < 8; i++)
@@ -223,7 +223,7 @@ void show_map()
   printf(ANSI_COLOR_RESET);
 }
 
-void show_bitmap()
+void show_bitmap(void)
 {
   for (int i = 0; i < 8; i++)
   {
@@ -240,21 +240,21 @@ void show_bitmap()
   }
 }
 
-void init_map()
+void init_map(void)
 {
   for (int i = 0; i < 8; i++)
     for (int j = 0; j < 8; j++)
       map[i][j] = EMPTY_CELL;
 }
 
-void init_bitmap()
+void init_bitmap(void)
 {
   for (int i = 0; i < 8; i++)
     for (int j = 0; j < 8; j++)
       bitmap[i][j] = '0';
 }
 
-int calc_busy_cells()
+int calc_busy_cells(void)
 {
   int counter = 0;
 
@@ -379,7 +379,7 @@ void update_bitmap(int i, int j)
 // p
 void add_piece(int start_i, int space, char piece)
 {
-  int place = rand() % space;
+  int place = pcg_rand() % space;
 
   for (int i = start_i; i < 8; i++)
     for (int j = 0; j < 8; j++)
@@ -400,5 +400,22 @@ void add_piece(int start_i, int space, char piece)
         place--;
       }
     }
+}
+
+static uint64_t pcg_state = 0x853c49e6748fea9bULL;
+static uint64_t const pcg_multiplier = 6364136223846793005ULL;
+
+void pcg_srand(void)
+{
+  pcg_state = (uint64_t)time(NULL) ^ (uintptr_t)&pcg_srand;
+}
+
+uint32_t pcg_rand(void)
+{
+  uint64_t oldstate = pcg_state;
+  pcg_state = oldstate * pcg_multiplier + 1442695040888963407ULL;
+  uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
+  uint32_t rot = oldstate >> 59u;
+  return (xorshifted >> rot) | (xorshifted << ((-rot) & 31u));
 }
 
