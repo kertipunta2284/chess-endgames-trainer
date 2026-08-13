@@ -11,7 +11,7 @@ else()
     add_compile_options(-Wall -Wextra -O2)
 endif()
 
-add_executable(main 
+add_executable(main.out
     main.c 
     funcs.c
 )

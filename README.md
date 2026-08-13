@@ -17,14 +17,14 @@ A random chess position generator focused on endgame training. This program help
 ### ⚙️ Position Configuration
 The program searches for any `.txt` file in its folder to read the piece configuration. 
 
-* **If a `.txt` file is found**: The program parses it automatically.
-* **If no `.txt` file is found**: The program will prompt you to enter the configuration manually in the terminal.
+* **If a `.txt` file is found**: the program parses it automatically.
+* **If no `.txt` file is found**: the program will prompt you to enter the configuration manually in the terminal.
 
 #### Format Rules:
-* Use standard FEN piece letters: white pieces are **UPPERCASE** (`R`, `N`, `B`, `Q`, `P`), black pieces are **lowercase** (`r`, `n`, `b`, `q`, `p`).
+* Use standard FEN piece letters: white pieces are **uppercase** (`R`, `N`, `B`, `Q`, `P`), black pieces are **lowercase** (`r`, `n`, `b`, `q`, `p`).
 * **Do not include kings** — they are generated automatically.
-* **No spaces inside the piece set!** Write all pieces together as a single word. 
-* Use exactly **one space** at the end to separate the piece set from the active color (`w` for White, `b` for Black).
+* **No spaces inside the piece set!** Write all pieces together as a single string. 
+* Use exactly **one space** at the end to separate the piece set from the side to move (`w` for White, `b` for Black).
 
 *Examples of valid text files/inputs:*
 ```text
@@ -36,15 +36,42 @@ QQQQqqqq b
 ### 🛠️ Requirements & Compilation
 The code is cross-platform. So, whatever, Skyler White. 
 
-To use the program, you just need to compile and link two source files: `main.c` and `funcs.c`. Quick guide for compiling the project on Linux/macOS:
+You can build the project using either a direct compiler call or CMake.
+
+#### Option 1: Direct compilation (GCC)
+
+Linux/macOS:
 ```bash
 gcc main.c funcs.c -o main.out
 ```
+Windows:
+```powershell
+gcc main.c funcs.c -o main.exe
+```
 
-### 💻 Usage
+#### Option 2: Using CMake (Cross-platform)
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+```
+
+### 💻 Usage (Command Line Interface is preferred)
+
 Linux/macOS:
 ```bash
 ./main.out
+```
+Windows:
+CMake build:
+```powershell
+.\build\Release\main.exe
+```
+GCC build:
+```powershell
+.\main.exe
 ```
 
 ### 📝 License
@@ -65,14 +92,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### ⚙️ Конфигурация позиций
 Программа ищет любой файл с расширением `.txt` в своей папке, чтобы считать настройки фигур.
 
-* **Если `.txt` файл найден**: Программа автоматически распознает его и берет данные оттуда.
-* **Если файла нет**: Программа запросит ввод конфигурации прямо в терминале.
+* **Если `.txt` файл найден**: программа автоматически распознает его и берет данные оттуда.
+* **Если файла нет**: программа запросит ввод конфигурации прямо в терминале.
 
 #### Правила формата:
-* Используйте стандартные буквы фигур из FEN-нотации: белые фигуры — **ЗАГЛАВНЫЕ** (`R`, `N`, `B`, `Q`, `P`), черные — **строчные** (`r`, `n`, `b`, `q`, `p`).
+* Используйте стандартные буквы фигур из FEN-нотации: белые фигуры — **заглавные** (`R`, `N`, `B`, `Q`, `P`), черные — **строчные** (`r`, `n`, `b`, `q`, `p`).
 * **Королей указывать не нужно** — они всегда добавляются на доску автоматически.
-* **Никаких пробелов внутри набора фигур!** Пишите все фигуры слитно, одним словом.
-* Используйте ровно **один пробел** в конце, чтобы отделить набор фигур от очереди хода: `w` (белые) или `b` (черные).
+* **Никаких пробелов внутри набора фигур!** Пишите все фигуры слитно, одной строкой.
+* Используйте ровно **один пробел** в конце, чтобы отделить набор фигур от очереди хода (`w` для белых или `b` для черных).
 
 *Примеры корректных файлов/ввода:*
 ```text
@@ -84,15 +111,41 @@ QQQQqqqq b
 ### 🛠️ Требования и компиляция
 Код кроссплатформенный. Код кроссплатформенный. Альцгеймер.
 
-Чтобы запустить программу, вам нужно просто скомпилировать и объединить два файла: `main.c` и `funcs.c`. Быстрый гайд по сборке для Linux/macOS:
+Вы можете собрать проект напрямую через компилятор или использовать CMake.
+
+#### Вариант 1: Прямая компиляция (GCC)
+
+Linux/macOS:
 ```bash
 gcc main.c funcs.c -o main.out
 ```
+Windows:
+```powershell
+gcc main.c funcs.c -o main.exe
+```
 
-### 💻 Запуск
+#### Вариант 2: Сборка через CMake (Кроссплатформенная)
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release
+```
+
+### 💻 Запуск (Лучше в командной строке)
 Linux/macOS:
 ```bash
 ./main.out
+```
+Windows:
+CMake сборка:
+```powershell
+.\build\Release\main.exe
+```
+GCC сборка:
+```powershell
+.\main.exe
 ```
 
 ### 📝 Лицензия
