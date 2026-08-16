@@ -71,11 +71,13 @@ int general_input(void)
   }
   else
   {
-    puts("Enter pieces set (for example, Rr)");
-    fgets_mf(pieces, 65, stdin);
+    puts("Enter pieces set and side to move (for example, \"RBNPRNrbnq w\")");
 
-    puts("Enter color (w, white/b, black):");
-    color = getchar();
+    char buffer[BUFFER_SIZE];
+    fgets_mf(buffer, BUFFER_SIZE, stdin);
+    if (validate_set(buffer) == -1)
+      return -1;
+    parse_set(buffer);
   }
 
   return 0;
@@ -165,8 +167,6 @@ int get_filename(char *filename, size_t max_len)
 int validate_set(char* set)
 {
   int set_size = strlen(set);
-  // if (set[set_size-1] == '\n')
-  //   set_size--;
   for (int i = 0; i < set_size-2; i++)
   {
     char _piece = tolower(set[i]);
@@ -181,23 +181,6 @@ int validate_set(char* set)
     return -1;
   if (set[set_size-1] != 'w' && set[set_size-1] != 'b')
     return -1;
-
-  return 0;
-}
-
-int validate_pieces(void)
-{
-  for (int i = 0; i < strlen(pieces); i++)
-  {
-    char _piece = tolower(pieces[i]);
-    if (_piece == 'k' || (
-        _piece != 'p' &&
-        _piece != 'r' &&
-        _piece != 'n' &&
-        _piece != 'b' &&
-        _piece != 'q'))
-      return -1;
-  }
 
   return 0;
 }

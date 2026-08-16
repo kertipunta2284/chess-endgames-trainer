@@ -42,12 +42,6 @@ int main()
   if (general_input() == -1)
     return -1;
 
-  if (validate_pieces() == -1)
-  {
-    puts("Invalid pieces set.");
-    return -1;
-  }
-
   if (color != 'w' && color != 'b')
   {
     puts("Invalid color.");

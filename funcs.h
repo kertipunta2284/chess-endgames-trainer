@@ -10,7 +10,6 @@ void parse_set(char* buffer);
 void clear_fp(FILE* fp);
 int get_filename(char *filename, size_t max_len);
 int validate_set(char* set);
-int validate_pieces(void);
 void show_map(void);
 void show_bitmap(void);
 void init_map(void);
