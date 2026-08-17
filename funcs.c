@@ -37,7 +37,6 @@ int general_input(void)
     if (fp == NULL)
     {
       puts("File open error.");
-      fclose(fp);
       return -1;
     }
 
@@ -47,11 +46,11 @@ int general_input(void)
     {
       if (validate_set(buffer) == -1)
       {
-        printf("Invalid set number %i.\n", line_counter+1);
+        printf("Invalid set number %d.\n", line_counter+1);
         fclose(fp);
         return -1;
       }
-      printf("%i. %s\n", line_counter+1, buffer);
+      printf("%d. %s\n", line_counter+1, buffer);
       line_counter++;
     }
     rewind(fp);
@@ -63,7 +62,12 @@ int general_input(void)
       return -1;
     }
     if (line_counter > 1)
-      input_set_number(fp, buffer, line_counter);
+      if (select_set(fp, buffer, line_counter) == -1)
+      {
+        puts("Invalid number of set.");
+        fclose(fp);
+        return -1;
+      }
 
     parse_set(buffer);
 
@@ -76,31 +80,32 @@ int general_input(void)
     char buffer[BUFFER_SIZE];
     fgets_mf(buffer, BUFFER_SIZE, stdin);
     if (validate_set(buffer) == -1)
+    {
+      puts("Invalid set.");
       return -1;
+    }
     parse_set(buffer);
   }
 
   return 0;
 }
 
-int input_set_number(FILE* fp, char* buffer, int lines_num)
+int select_set(FILE* fp, char* buffer, int lines_num)
 {
   puts("Enter number of set:");
   int set_num;
-  scanf("%i", &set_num);
-  // printf("set_num: %i\n", set_num);
 
-  if (set_num < 1 || set_num > lines_num)
-  {
-    puts("Invalid number of set.");
+  if (scanf("%d", &set_num) != 1 || set_num < 1 || set_num > lines_num)
     return -1;
-  }
+
+  clear_fp(stdin);
+  // printf("set_num: %d\n", set_num);
 
   int line_counter = 1;
   while (fgets_mf(buffer, BUFFER_SIZE, fp) != NULL)
   {
     // printf("buffer: %s\n", buffer);
-    // printf("line_counter: %i\n", line_counter);
+    // printf("line_counter: %d\n", line_counter);
 
     if (line_counter == set_num)
       break;
@@ -115,9 +120,9 @@ void parse_set(char* buffer)
 {
   char* space_ptr = strchr(buffer, ' ');
   int pieces_len = strcspn(buffer, " ");
+
   strncpy(pieces, buffer, pieces_len);
   pieces[pieces_len] = 0;
-
   color = *(space_ptr + 1);
 }
 
@@ -249,15 +254,13 @@ int calc_busy_cells(void)
   return counter;
 }
 
-void to_fen(char *str)
+void gen_fen(char *str)
 {
   int len = strlen(str);
   int counter = 0;
 
   for (int i = 0; i < 8; i++)
   {
-    str[len++] = '/';
-
     for (int j = 0; j < 8; j++)
     {
       if (map[i][j] == EMPTY_CELL)
@@ -277,8 +280,9 @@ void to_fen(char *str)
       str[len++] = counter + '0';
       counter = 0;
     }
+    str[len++] = '/';
   }
-  str[len] = 0;
+  str[len-1] = 0;
 }
 
 char in_map(int x, int y)
@@ -289,7 +293,7 @@ char in_map(int x, int y)
 void update_bitmap(int i, int j)
 {
   char piece = map[i][j];
-  // printf("%c %i; isup: %i\n", piece, color, (isupper(piece)));
+  // printf("%c %d; isup: %d\n", piece, color, (isupper(piece)));
   if (!!isupper(piece) != color)
     return;
 
@@ -331,7 +335,7 @@ void update_bitmap(int i, int j)
     {
       int x = j+vectors[v][0];
       int y = i+vectors[v][1];
-      // printf("v: %i; %i %i\n", v, x, y);
+      // printf("v: %d; %d %d\n", v, x, y);
       while (1)
       {
         if (!in_map(x, y) || map[y][x] != EMPTY_CELL)
@@ -400,5 +404,10 @@ uint32_t pcg_rand(void)
   uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
   uint32_t rot = oldstate >> 59u;
   return (xorshifted >> rot) | (xorshifted << ((-rot) & 31u));
+}
+
+uint64_t pcg_rand64(void)
+{
+  return ((uint64_t)pcg_rand() << 32) | pcg_rand();
 }
 
