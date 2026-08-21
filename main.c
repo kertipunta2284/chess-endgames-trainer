@@ -1,22 +1,10 @@
 #include <stdio.h>
 #include <stdint.h>
-// #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include "funcs.h"
 #include "consts.h"
-
-// #define KNIGHT_MASK 0x0a1100110aULL
-
-// 1 1 1 1  1 1 1 0
-// 1 1 1 1  1 1 1 0
-// 1 1 1 1  1 1 1 0
-// 1 1 1 1  1 1 1 0
-// 1 1 1 1  1 1 1 0
-// 1 1 1 1  1 1 1 0
-// 1 1 1 1  1 1 1 0
-// 1 1 1 1  1 1 1 0
 
 // #define NOT_FILE_A       0xfefefefefefefefeULL
 // #define NOT_FILE_AB      0xfcfcfcfcfcfcfcfcULL
@@ -42,18 +30,18 @@ uint64_t knight_bitmap[64];
 uint64_t king_bitmap[64];
 uint64_t pawn_bitmap[2][64];
 
-uint64_t not_files[2][8] =
-{
-  { 0xffffffffffffffffULL, 0xfefefefefefefefeULL,
-    0xfcfcfcfcfcfcfcfcULL, 0xf8f8f8f8f8f8f8f8ULL,
-    0xf0f0f0f0f0f0f0f0ULL, 0xe0e0e0e0e0e0e0e0ULL,
-    0xc0c0c0c0c0c0c0c0ULL, 0x8080808080808080ULL },
-
-  { 0xffffffffffffffffULL, 0x7f7f7f7f7f7f7f7fULL,
-    0x3f3f3f3f3f3f3f3fULL, 0x1f1f1f1f1f1f1f1fULL,
-    0x0f0f0f0f0f0f0f0fULL, 0x0707070707070707ULL,
-    0x0303030303030303ULL, 0x0101010101010101ULL }
-};
+// uint64_t not_files[2][8] =
+// {
+//   { 0xffffffffffffffffULL, 0xfefefefefefefefeULL,
+//     0xfcfcfcfcfcfcfcfcULL, 0xf8f8f8f8f8f8f8f8ULL,
+//     0xf0f0f0f0f0f0f0f0ULL, 0xe0e0e0e0e0e0e0e0ULL,
+//     0xc0c0c0c0c0c0c0c0ULL, 0x8080808080808080ULL },
+//
+//   { 0xffffffffffffffffULL, 0x7f7f7f7f7f7f7f7fULL,
+//     0x3f3f3f3f3f3f3f3fULL, 0x1f1f1f1f1f1f1f1fULL,
+//     0x0f0f0f0f0f0f0f0fULL, 0x0707070707070707ULL,
+//     0x0303030303030303ULL, 0x0101010101010101ULL }
+// };
 
 char pieces[65];
 char color;
@@ -82,15 +70,6 @@ int vectors[16][2] = {
   {2, 1}
 };
 
-// 0 1 0 1  0 0 0 0
-// 1 0 0 0  1 0 0 0
-// 0 0 0 0  0 0 0 0
-// 1 0 0 0  1 0 0 0
-// 0 1 0 1  0 0 0 0
-// 0 0 0 0  0 0 0 0
-// 0 0 0 0  0 0 0 0
-// 0 0 0 0  0 0 0 0
-
 /*
  * TEST
  */
@@ -108,27 +87,97 @@ void show_bitmap_(uint64_t bitmap)
   putc('\n', stdout);
 }
 
-void init_bitmap_()
+void init_knight_bitmaps_()
 {
   for (int i = 0; i < 64; i++)
   {
-    knight_bitmap[i] = 0ULL;
+    knight_bitmap[i] = 0;
     int x = i % 8;
     int y = i / 8;
     for (int v = 8; v < 16; v++)
     {
       int mx = x + vectors[v][0];
       int my = y + vectors[v][1];
-      // printf("%d %d\n", mx, my);
       if (in_map(mx, my))
       {
         int place = my * 8 + mx;
-        // show_bitmap_(knight_bitmap[i]);
-        knight_bitmap[i] |= (1ULL << (uint64_t)place);
-        // show_bitmap_(knight_bitmap[i]);
+        knight_bitmap[i] |= (1ULL << place);
       }
     }
   }
+}
+
+void init_pawn_bitmaps_()
+{
+  for (int c = 0; c < 2; c++)
+    for (int i = 0; i < 64; i++)
+    {
+      pawn_bitmap[c][i] = 0;
+      int x = i % 8;
+      int y = i / 8;
+      int my = y + (c ? -1 : 1);
+      int mx1 = x - 1;
+      int mx2 = x + 1;
+      if (in_map(mx1, my))
+      {
+        int place = my * 8 + mx1;
+        pawn_bitmap[c][i] |= (1ULL << place);
+      }
+      if (in_map(mx2, my))
+      {
+        int place = my * 8 + mx2;
+        pawn_bitmap[c][i] |= (1ULL << place);
+      }
+    }
+}
+
+void init_king_bitmaps_()
+{
+  for (int i = 0; i < 64; i++)
+  {
+    king_bitmap[i] = 0;
+    int x = i % 8;
+    int y = i / 8;
+    for (int mx = x-1; mx <= x+1; mx++)
+      for (int my = y-1; my <= y+1; my++)
+        if (in_map(mx, my))
+        {
+          int place = my * 8 + mx;
+          king_bitmap[i] |= (1ULL << place);
+        }
+  }
+}
+
+uint64_t gen_ray_bitmap(int x, int y, int start_v, int end_v, uint64_t occupancy)
+{
+  uint64_t ray_bitmap = 0;
+  for (int v = start_v; v < end_v; v++)
+  {
+    int mx = x;
+    int my = y;
+
+    while (1)
+    {
+      mx += vectors[v][0];
+      my += vectors[v][1];
+
+      int move_place = my * 8 + mx;
+      if (!in_map(mx, my) || ((occupancy >> move_place) & 1))
+        break;
+
+      ray_bitmap |= (1ULL << move_place);
+    }
+  }
+
+  return ray_bitmap;
+}
+
+void init_bitmaps_()
+{
+  // mx equ move x
+  init_knight_bitmaps_();
+  init_pawn_bitmaps_();
+  init_king_bitmaps_();
 }
 
 /*
@@ -139,12 +188,12 @@ int main(void)
 {
   pcg_srand();
 
-  // init_bitmap_();
-  // for (int i = 0; i < 64; i++)
-  // {
-  //   show_bitmap_(knight_bitmap[i]);
-  //   usleep(100000);
-  // }
+  init_bitmaps_();
+  for (int i = 0; i < 64; i++)
+  {
+    show_bitmap_(knight_bitmap[i]);
+    usleep(100000);
+  }
 
   if (general_input() == -1)
     return -1;

@@ -401,9 +401,9 @@ uint32_t pcg_rand(void)
 {
   uint64_t oldstate = pcg_state;
   pcg_state = oldstate * pcg_multiplier + 1442695040888963407ULL;
-  uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
-  uint32_t rot = oldstate >> 59u;
-  return (xorshifted >> rot) | (xorshifted << ((-rot) & 31u));
+  uint32_t xorshifted = ((oldstate >> 18) ^ oldstate) >> 27;
+  uint32_t rot = oldstate >> 59;
+  return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
 }
 
 uint64_t pcg_rand64(void)
